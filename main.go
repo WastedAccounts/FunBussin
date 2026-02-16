@@ -61,25 +61,6 @@ func main() {
 		runSync(swClient, *syncLimit, *syncAll, *syncDryRun)
 		return
 	}
-
-	// waivers, err := client.ListWaivers(smartwaiver.ListWaiversOptions{Limit: 1})
-	// if err != nil {
-	// 	log.Fatalf("list waivers failed: %v", err)
-	// }
-	// fmt.Printf("\nFirst 1 whole waiver:\n")
-	// for i, w := range waivers.Waivers {
-	// 	full, err := client.GetWaiver(w.WaiverID)
-	// 	if err != nil {
-	// 		log.Printf("  [%d] %s: get failed: %v", i+1, w.WaiverID, err)
-	// 		continue
-	// 	}
-	// 	var pretty []byte
-	// 	pretty, err = json.MarshalIndent(full.Waiver, "", "  ")
-	// 	if err != nil {
-	// 		pretty = full.Waiver
-	// 	}
-	// 	fmt.Printf("\n--- Waiver %d: %s ---\n%s\n", i+1, w.WaiverID, string(pretty))
-	// }
 }
 
 func runSync(swClient *smartwaiver.Client, limit int, all, dryRun bool) {
