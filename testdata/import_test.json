@@ -1,0 +1,16 @@
+[
+  {
+    "EmailAddress": "FunBussinTest2@gmail.com",
+    "FirstName": "FunBussin",
+    "LastName": "FunBussinTest2",
+    "Child1FirstName": "FunBussinTCFirst1",
+    "Child1LastName": "FunBussinTCLast1",
+    "Child1Bday": "05/12/2033",
+    "Child2FirstName": "FunBussinTCFirst2",
+    "Child2Bday": "08/03/2033",
+    "Child3FirstName": "FunBussinTCFirst3",
+    "Child3Bday": "12/01/2033",
+    "MarketingAllowed": true,
+    "TAGS": ["SmartWaiver"]
+  }
+]
