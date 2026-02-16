@@ -2,3 +2,5 @@
 logs/
 *.exe
 testdata/
+Dockerfile
+

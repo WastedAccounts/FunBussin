@@ -74,7 +74,11 @@ func (c *Client) FetchContacts(opts ListWaiversOptions) ([]mailchimp.Contact, er
 		}
 		ct := w.ToContact()
 		if ct == nil {
-			logging.GetLogger().ActivityLogging("smartwaiver.FetchContacts", "skip waiver "+sum.WaiverID+": no email")
+			if w.Email == "" {
+				logging.GetLogger().ActivityLogging("smartwaiver.FetchContacts", "skip waiver "+sum.WaiverID+": no email")
+			} else {
+				logging.GetLogger().ActivityLogging("smartwaiver.FetchContacts", "skip waiver "+sum.WaiverID+": marketing not allowed")
+			}
 			continue
 		}
 		contacts = append(contacts, *ct)
@@ -85,9 +89,12 @@ func (c *Client) FetchContacts(opts ListWaiversOptions) ([]mailchimp.Contact, er
 
 // ToContact converts a Smartwaiver waiver into a Mailchimp contact.
 // Parent = guardian; children = first 3 participants.
-// Skips waivers with no email.
+// Skips waivers with no email or MarketingAllowed=false.
 func (w *Waiver) ToContact() *mailchimp.Contact {
 	if w.Email == "" {
+		return nil
+	}
+	if !w.MarketingAllowed {
 		return nil
 	}
 	ct := &mailchimp.Contact{

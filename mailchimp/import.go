@@ -38,6 +38,11 @@ func (c *Client) ImportContacts(listID string, contacts []Contact, status string
 			logging.GetLogger().Info("  [%d] skip: missing email", i+1)
 			continue
 		}
+		if !ct.MarketingAllowed {
+			logging.GetLogger().ActivityLogging("mailchimp.ImportContacts", fmt.Sprintf("[%d] %s: skip: marketing not allowed", i+1, ct.EmailAddress))
+			logging.GetLogger().Info("  [%d] %s: skip: marketing not allowed", i+1, ct.EmailAddress)
+			continue
+		}
 		if err := c.AddOrUpdateMember(listID, ct, status); err != nil {
 			logging.GetLogger().ErrorLogging(5, "mailchimp.ImportContacts", fmt.Sprintf("[%d] %s: %v", i+1, ct.EmailAddress, err))
 			logging.GetLogger().Info("  [%d] %s: %v", i+1, ct.EmailAddress, err)

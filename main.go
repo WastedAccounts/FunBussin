@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"funbussin/backend/appinit"
@@ -16,6 +19,7 @@ func main() {
 	doImport := flag.Bool("import", false, "import contacts from testdata/import_test.json to Mailchimp")
 	importFile := flag.String("file", "testdata/import_test.json", "path to JSON file (used with -import)")
 	doSync := flag.Bool("sync", false, "fetch waivers from Smartwaiver and import to Mailchimp")
+	syncInterval := flag.String("interval", "", "with -sync: run every N (e.g. 15m); run until stopped")
 	syncLimit := flag.Int("limit", 100, "max waivers to fetch (used with -sync)")
 	syncAll := flag.Bool("all", false, "ignore 24h filter, fetch all waivers (for debugging)")
 	syncDryRun := flag.Bool("dry-run", false, "with -sync: fetch only, do not import to Mailchimp")
@@ -58,8 +62,29 @@ func main() {
 	}
 
 	if *doSync {
-		runSync(swClient, *syncLimit, *syncAll, *syncDryRun)
+		interval, _ := time.ParseDuration(*syncInterval)
+		if interval > 0 {
+			runSyncLoop(swClient, *syncLimit, *syncAll, *syncDryRun, interval)
+		} else {
+			runSync(swClient, *syncLimit, *syncAll, *syncDryRun)
+		}
 		return
+	}
+}
+
+func runSyncLoop(swClient *smartwaiver.Client, limit int, all, dryRun bool, interval time.Duration) {
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+	logging.GetLogger().Info("Running sync every %s (Ctrl+C to stop)", interval)
+	for {
+		runSync(swClient, limit, all, dryRun)
+		select {
+		case <-ctx.Done():
+			logging.GetLogger().Info("Stopping (received signal)")
+			return
+		case <-time.After(interval):
+			// next run
+		}
 	}
 }
 

@@ -204,9 +204,6 @@ func (ct *Contact) mergeFields() map[string]string {
 	} else {
 		m["MMERGE17"] = "No"
 	}
-	if len(ct.Tags) > 0 {
-		m["TAGS"] = strings.Join(ct.Tags, ",")
-	}
 	return m
 }
 
@@ -254,5 +251,49 @@ func (c *Client) AddOrUpdateMember(listID string, contact Contact, status string
 	}
 
 	path := fmt.Sprintf("/lists/%s/members/%s", url.PathEscape(listID), subscriberHash)
-	return c.do(http.MethodPut, path, nil, bytes.NewReader(jsonBody), nil)
+	if err := c.do(http.MethodPut, path, nil, bytes.NewReader(jsonBody), nil); err != nil {
+		return err
+	}
+	// Add tags via separate Tags API (merge_fields don't support member tags)
+	if len(contact.Tags) > 0 {
+		return c.AddMemberTags(listID, contact.EmailAddress, contact.Tags)
+	}
+	return nil
+}
+
+// addTagsRequest is the body for POST /lists/{list_id}/members/{subscriber_hash}/tags.
+type addTagsRequest struct {
+	Tags []tagItem `json:"tags"`
+}
+
+type tagItem struct {
+	Name   string `json:"name"`
+	Status string `json:"status"` // "active" to add, "inactive" to remove
+}
+
+// AddMemberTags adds tags to a list member via the Tags API.
+// SubscriberHash is derived from the lowercase email.
+func (c *Client) AddMemberTags(listID, email string, tags []string) error {
+	if listID == "" || email == "" || len(tags) == 0 {
+		return nil
+	}
+	hash := md5.Sum([]byte(strings.ToLower(email)))
+	subscriberHash := hex.EncodeToString(hash[:])
+	var items []tagItem
+	for _, t := range tags {
+		t = strings.TrimSpace(t)
+		if t != "" {
+			items = append(items, tagItem{Name: t, Status: "active"})
+		}
+	}
+	if len(items) == 0 {
+		return nil
+	}
+	body := addTagsRequest{Tags: items}
+	jsonBody, err := json.Marshal(body)
+	if err != nil {
+		return err
+	}
+	path := fmt.Sprintf("/lists/%s/members/%s/tags", url.PathEscape(listID), subscriberHash)
+	return c.do(http.MethodPost, path, nil, bytes.NewReader(jsonBody), nil)
 }
