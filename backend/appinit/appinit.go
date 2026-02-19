@@ -15,12 +15,12 @@ import (
 func Init() {
 	logging.GetLogger().SetLogLevel(5)
 	logging.GetLogger().SetLogFileNames("./logs/activity.log", "./logs/error.log", "./logs/service.log")
-	logging.GetLogger().ServiceLogging("appinit.Init", "Logging system initialized")
+	logging.GetLogger().ServiceLog("appinit.Init", "Logging system initialized")
 
 	if err := godotenv.Load(); err != nil {
-		logging.GetLogger().ServiceLogging("appinit.Init.godotenv", "No .env file found. Will use system environment variables")
+		logging.GetLogger().ServiceLog("appinit.Init.godotenv", "No .env file found. Will use system environment variables")
 	} else {
-		logging.GetLogger().ServiceLogging("appinit.Init.godotenv", ".env file found. Using variables stored here")
+		logging.GetLogger().ServiceLog("appinit.Init.godotenv", ".env file found. Using variables stored here")
 	}
 
 	if os.Getenv("TZ") == "" {
@@ -34,13 +34,13 @@ func InitSmartwaiver(client *smartwaiver.Client) error {
 	if err != nil {
 		return fmt.Errorf("smartwaiver ping failed: %w", err)
 	}
-	logging.GetLogger().ServiceLogging("appinit.InitSmartwaiver", fmt.Sprintf("Ping: %s", pong))
+	logging.GetLogger().ServiceLog("appinit.InitSmartwaiver", "Ping: %s", pong)
 
 	version, err := client.Version()
 	if err != nil {
 		return fmt.Errorf("smartwaiver version failed: %w", err)
 	}
-	logging.GetLogger().ServiceLogging("appinit.InitSmartwaiver", fmt.Sprintf("API version: %s", version))
+	logging.GetLogger().ServiceLog("appinit.InitSmartwaiver", "API version: %s", version)
 	return nil
 }
 
@@ -50,6 +50,6 @@ func InitMailchimp(client *mailchimp.Client) error {
 	if err != nil {
 		return fmt.Errorf("mailchimp ping failed: %w", err)
 	}
-	logging.GetLogger().ServiceLogging("appinit.InitMailchimp", fmt.Sprintf("Ping: %s", health))
+	logging.GetLogger().ServiceLog("appinit.InitMailchimp", "Ping: %s", health)
 	return nil
 }

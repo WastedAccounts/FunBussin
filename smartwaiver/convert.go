@@ -2,6 +2,7 @@ package smartwaiver
 
 import (
 	"encoding/json"
+	"fmt"
 	"sort"
 	"time"
 
@@ -56,12 +57,12 @@ func (c *Client) FetchContacts(opts ListWaiversOptions) ([]mailchimp.Contact, er
 			filtered = append(filtered, w)
 		}
 		list.Waivers = filtered
-		logging.GetLogger().Info("  API returned %d waivers, %d in last 24h (client-side filter)", before, len(list.Waivers))
+		logging.GetLogger().ActivityLogging("smartwaiver.FetchContacts", fmt.Sprintf("API returned %d waivers, %d in last 24h (client-side filter)", before, len(list.Waivers)))
 	} else {
-		logging.GetLogger().Info("  API returned %d waivers", len(list.Waivers))
+		logging.GetLogger().ActivityLogging("smartwaiver.FetchContacts", fmt.Sprintf("API returned %d waivers", len(list.Waivers)))
 	}
 	var contacts []mailchimp.Contact
-	for i, sum := range list.Waivers {
+	for _, sum := range list.Waivers {
 		full, err := c.GetWaiver(sum.WaiverID)
 		if err != nil {
 			logging.GetLogger().ErrorLogging(5, "smartwaiver.FetchContacts", "GetWaiver "+sum.WaiverID+": "+err.Error())
@@ -82,7 +83,6 @@ func (c *Client) FetchContacts(opts ListWaiversOptions) ([]mailchimp.Contact, er
 			continue
 		}
 		contacts = append(contacts, *ct)
-		logging.GetLogger().Info("  [%d] %s: converted (guardian + %d participants)", i+1, ct.EmailAddress, len(w.Participants))
 	}
 	return contacts, nil
 }

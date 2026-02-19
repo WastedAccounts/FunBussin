@@ -76,14 +76,22 @@ func (l *Logger) ActivityLogging(pkg, msg string) {
 	l.writeLog(l.activityLog, "[ACTIVITY] -- ", pkg, msg)
 }
 
-// ServiceLogging logs service states.
+// ServiceLogging logs service states to the service log file.
 func (l *Logger) ServiceLogging(pkg, msg string) {
 	l.writeLog(l.serviceLog, "[SERVICE] -- ", pkg, msg)
 }
 
-// Info writes to stdout for immediate feedback (e.g. startup, import progress).
+// ServiceLog writes to both stdout and the service log. Use for startup/init messages.
+func (l *Logger) ServiceLog(pkg, format string, args ...interface{}) {
+	msg := fmt.Sprintf(format, args...)
+	fmt.Println(msg)
+	l.writeLog(l.serviceLog, "[SERVICE] -- ", pkg, msg)
+}
+
+// Info writes to the activity log (not stdout). Use for startup, progress, summaries.
 func (l *Logger) Info(format string, args ...interface{}) {
-	fmt.Printf(format+"\n", args...)
+	msg := fmt.Sprintf(format, args...)
+	l.writeLog(l.activityLog, "[INFO] -- ", "app", msg)
 }
 
 // Fatal logs the error and exits with code 1.

@@ -23,7 +23,6 @@ func (c *Client) ImportFromFile(listID string, path string, status string) error
 		return fmt.Errorf("parse JSON: %w", err)
 	}
 	logging.GetLogger().ActivityLogging("mailchimp.ImportFromFile", fmt.Sprintf("Importing %d contacts from %s to list %s", len(contacts), path, listID))
-	logging.GetLogger().Info("Importing %d contacts from %s to list %s", len(contacts), path, listID)
 	return c.ImportContacts(listID, contacts, status)
 }
 
@@ -35,21 +34,17 @@ func (c *Client) ImportContacts(listID string, contacts []Contact, status string
 	for i, ct := range contacts {
 		if ct.EmailAddress == "" {
 			logging.GetLogger().ActivityLogging("mailchimp.ImportContacts", fmt.Sprintf("[%d] skip: missing email", i+1))
-			logging.GetLogger().Info("  [%d] skip: missing email", i+1)
 			continue
 		}
 		if !ct.MarketingAllowed {
 			logging.GetLogger().ActivityLogging("mailchimp.ImportContacts", fmt.Sprintf("[%d] %s: skip: marketing not allowed", i+1, ct.EmailAddress))
-			logging.GetLogger().Info("  [%d] %s: skip: marketing not allowed", i+1, ct.EmailAddress)
 			continue
 		}
 		if err := c.AddOrUpdateMember(listID, ct, status); err != nil {
 			logging.GetLogger().ErrorLogging(5, "mailchimp.ImportContacts", fmt.Sprintf("[%d] %s: %v", i+1, ct.EmailAddress, err))
-			logging.GetLogger().Info("  [%d] %s: %v", i+1, ct.EmailAddress, err)
 			continue
 		}
 		logging.GetLogger().ActivityLogging("mailchimp.ImportContacts", fmt.Sprintf("[%d] %s: ok", i+1, ct.EmailAddress))
-		logging.GetLogger().Info("  [%d] %s: ok", i+1, ct.EmailAddress)
 	}
 	return nil
 }

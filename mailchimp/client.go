@@ -12,8 +12,6 @@ import (
 	"regexp"
 	"strings"
 	"time"
-
-	"funbussin/logging"
 )
 
 // Client is a Mailchimp Marketing API v3 client.
@@ -240,14 +238,6 @@ func (c *Client) AddOrUpdateMember(listID string, contact Contact, status string
 	jsonBody, err := json.Marshal(body)
 	if err != nil {
 		return err
-	}
-
-	// Debug: show payload sent to Mailchimp
-	var pretty bytes.Buffer
-	if err := json.Indent(&pretty, jsonBody, "", "  "); err == nil {
-		logging.GetLogger().Info("Mailchimp payload for %s:\n%s", contact.EmailAddress, pretty.String())
-	} else {
-		logging.GetLogger().Info("Mailchimp payload for %s: %s", contact.EmailAddress, string(jsonBody))
 	}
 
 	path := fmt.Sprintf("/lists/%s/members/%s", url.PathEscape(listID), subscriberHash)
